@@ -1,0 +1,4 @@
+module_settings:
+  module_name: "Find Companies"
+  module_description: "Search for companies based on name, domain, or industry and retrieve enriched company data."
+

@@ -1,0 +1,4 @@
+module_settings:
+  module_name: "Email Finder"
+  module_description: "Find a verified business email address using first name, last name, and domain."
+

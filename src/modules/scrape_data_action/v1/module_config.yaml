@@ -1,0 +1,4 @@
+module_settings:
+  module_name: "Scrape Profiles"
+  module_description: "Scrape public profile data for individuals based on name, company, or known URLs."
+

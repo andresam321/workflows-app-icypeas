@@ -1,0 +1,3 @@
+module_settings:
+  module_name: "Find Company URLs"
+  module_description: "Locate official website URLs for companies based on company name, industry, or location."
