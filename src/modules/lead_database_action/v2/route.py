@@ -1,28 +1,122 @@
-from workflows_cdk import Response, Request
+from workflows_cdk import Request, Response
 from flask import request as flask_request
 from main import router
+import requests
+import os
 
-@router.route("/execute", methods=["GET", "POST"])
+@router.route("/execute", methods=["POST", "GET"])
 def execute():
     """
-    This is the function that is executed when you click on "Run" on a workflow that uses this action.
+    Search for companies in the Icypeas Lead Database.
+    Find companies based on various criteria like industry, size, location, etc.
     """
     request = Request(flask_request)
-
-    # The data object of request.data will contain all of the fields filled in the form and defined in the schema.json file.
     data = request.data
-
-    # Your logic here
-    # Here you can add your logic to execute the action which may consist of, for example:
-    # - calling an API
-    # - doing some calculations
-    # - doing some data transformations
-    # - validating data
+    # data = flask_request.get_json(force=True)
+    # Get API key from connection or environment
+    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
     
-
-    output = []
-
-    return Response(data=output, metadata={"affected_rows": len(output)})
+    if not api_key:
+        return Response(
+            data={"error": "API key not provided"},
+            metadata={"status": "failed", "code": 401}
+        )
+    
+    headers = {
+        "Authorization": api_key,
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        # Extract search parameters
+        query_filters = {
+            "name": data.get("name"),
+            "lid": data.get("lid"),
+            "urn": data.get("urn"),
+            "type": data.get("type"),
+            "industry": data.get("industry"),
+            "location": data.get("location"),
+            "headcount": data.get("headcount")
+        }
+        print("Query Filters:", query_filters)
+        # Remove None values to only send provided parameters
+        search_params = {k: v for k, v in query_filters.items() if v is not None}
+        
+        # Validate that at least one search criterion is provided
+        search_criteria = {k: v for k, v in search_params.items() if k not in ["limit", "offset"]}
+        if not search_criteria:
+            return Response(
+                data={"error": "At least one search criterion is required (company_name, industry, location, etc.)"},
+                metadata={"status": "failed", "code": 400}
+            )
+        
+        # Make the API request
+        url = "https://app.icypeas.com/api/lead-database/find-companies"
+        
+        response = requests.post(url, json=search_params, headers=headers, timeout=30)
+        response.raise_for_status()
+        
+        result = response.json()
+        
+        # Check if the response indicates success
+        if result.get("success", False):
+            # Check if this is an async operation with a job ID
+            if result.get("_id") or result.get("job_id"):
+                return Response(
+                    data={
+                        "job_id": result.get("_id") or result.get("job_id"),
+                        "message": "Search initiated. Use the job ID to retrieve results.",
+                        "search_criteria": search_criteria
+                    },
+                    metadata={"status": "processing"}
+                )
+            else:
+                # Direct results returned
+                companies = result.get("results", [])
+                return Response(
+                    data={
+                        "total_found": result.get("total", len(companies)),
+                        "limit": search_params.get("limit", 100),
+                        "offset": search_params.get("offset", 0),
+                        "companies": companies,
+                        "search_criteria": search_criteria
+                    },
+                    metadata={"status": "success"}
+                )
+        else:
+            return Response(
+                data={"error": "Search failed", "details": result},
+                metadata={"status": "failed"}
+            )
+        
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            return Response(
+                data={
+                    "error": "Lead Database endpoint not found",
+                    "message": "The Lead Database feature may require special access or API activation. Please contact Icypeas support.",
+                    "attempted_url": url
+                },
+                metadata={"status": "failed", "code": 404}
+            )
+        else:
+            return Response(
+                data={
+                    "error": f"HTTP error: {e.response.status_code}",
+                    "details": e.response.text
+                },
+                metadata={"status": "failed", "code": e.response.status_code}
+            )
+    except requests.exceptions.RequestException as e:
+        return Response(
+            data={"error": f"Request failed: {str(e)}"},
+            metadata={"status": "failed", "code": 500}
+        )
+    except Exception as e:
+        return Response(
+            data={"error": f"Unexpected error: {str(e)}"},
+            metadata={"status": "failed", "code": 500}
+        )
 
 
 @router.route("/content", methods=["GET", "POST"])
