@@ -2,79 +2,39 @@ from workflows_cdk import Response, Request
 from flask import request as flask_request
 from main import router
 
-from workflows_cdk import Response, Request
-from flask import request as flask_request
-from main import router
-import os
-import requests
-import json
-from dotenv import load_dotenv
-load_dotenv()
 
-@router.route("/execute", methods=["POST", "GET"])
+@router.route("/execute", methods=["GET", "POST"])
 def execute():
-    # request = Request(flask_request)
-    # data = request.data
-    data = flask_request.get_json(force=True)
+    request = Request(flask_request)
+    data = request.data
 
-    task = data.get("task")  # 'email-search', 'email-verification', or 'domain-search'
-    name = data.get("name", "Icypeas Bulk Job")
-    input_data = data.get("data")  # Array of rows (format depends on task)
-    # external_ids = data.get("externalIds")  # Optional
+    # Example input Icypeas sends via webhookUrlItem
+    # {
+    #   "externalId": "row-123",
+    #   "item": {
+    #     "_id": "...",
+    #     "status": "FOUND",
+    #     "email": "john.doe@company.com",
+    #     ...
+    #   }
+    # }
 
-    if task not in {"email-search", "email-verification", "domain-search"}:
-        return Response(data={"error": "Invalid task"}, metadata={})
+    item = data.get("item", {})
+    external_id = data.get("externalId", None)
 
-    if not isinstance(input_data, list) or len(input_data) == 0:
-        return Response(data={"error": "Missing or invalid data array"}, metadata={})
+    output = [{
+        "email": item.get("email"),
+        "status": item.get("status"),
+        "source": item.get("source"),
+        "score": item.get("score"),
+        "verified": item.get("verified"),
+        "type": item.get("type"),
+        "external_id": external_id,
+        "raw": item  # optional: return full raw result
+    }]
 
-    api_key = os.getenv("ICYPEAS_API_KEY", "").strip()
-    headers = {
-        "Authorization": api_key,
-        "Content-Type": "application/json"
-    }
-    print("headers:", headers)
-    # Construct custom object for webhook URLs
-    custom = {
-        "webhookUrlItem": "https://88af049370a9.ngrok-free.app/discover_email_address_action/v3/execute",
-        # "webhookUrlBulkDone": "https://yourdomain.com/webhook/bulk",
-        # "includeResultsInWebhook": False
-    }
+    return Response(data=output, metadata={"affected_rows": len(output)})
 
-    # if external_ids:
-    #     if len(external_ids) != len(input_data):
-    #         return Response(data={"error": "externalIds length must match data array length"}, metadata={})
-    #     custom["externalIds"] = external_ids
-
-    payload = {
-        "task": task,
-        "name": name,
-        "data": input_data,
-        "custom": custom
-    }
-    print("Icypeas payload:", json.dumps(payload, indent=2))
-    try:
-        res = requests.post("https://app.icypeas.com/api/bulk-search", headers=headers, json=payload)
-        print("line58", res)
-        print("Icypeas response status:", res.status_code)
-        print("Icypeas response:", res.text)
-
-        if res.status_code != 200:
-            return Response(data={"error": res.text, "status_code": res.status_code}, metadata={})
-
-        res_data = res.json()
-        print("line65",res_data)
-        # job_id = res_data.get("job", {}).get("_id") or res_data.get("items", [{}])[0].get("_id")
-
-        return Response(data={
-            "job_id": res_data["file"],
-            "message": "Job submitted successfully",
-            "task": task,
-            "submitted": len(input_data)
-        })
-
-    except Exception as e:
-        return Response(data={"error": str(e)}, metadata={})
 
 @router.route("/webhook/item", methods=["POST"])
 def icypeas_webhook_item():

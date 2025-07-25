@@ -80,10 +80,10 @@ if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" || "$
     # Windows - using Command Prompt or PowerShell
     echo "Detected Windows environment"
     echo "Starting container on port ${PORT}..."
-    docker run --rm -p ${PORT}:${PORT} -it -e ENVIRONMENT=dev -e REGION=besg --name=${APP_NAME} -v ${PWD}:/usr/src/app/ ${APP_NAME}
+    docker run --rm --env-file .env -p ${PORT}:${PORT} -it -e ENVIRONMENT=dev -e REGION=besg --name=${APP_NAME} -v ${PWD}:/usr/src/app/ ${APP_NAME}
 else
     # Unix/Mac environment
     echo "Detected Unix/Mac environment"
     echo "Starting container on port ${PORT}..."
-    docker run --rm -p ${PORT}:${PORT} -it -e ENVIRONMENT=dev -e REGION=besg --name=${APP_NAME} -v $PWD:/usr/src/app/ ${APP_NAME}
+    docker run --rm --env-file .env -p ${PORT}:${PORT} -it -e ENVIRONMENT=dev -e REGION=besg --name=${APP_NAME} -v ${PWD}:/usr/src/app/ ${APP_NAME}
 fi 
