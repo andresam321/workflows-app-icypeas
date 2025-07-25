@@ -1,4 +1,3 @@
 module_settings:
-  module_name: "Bulk Email Finder"
-  module_description: "Find multiple business emails by providing a list of names and domains."
-
+  module_name: "Bulk Search (Start Job)"
+  module_description: "Submit a bulk job to verify multiple emails or domains. Supports up to 5000 items."

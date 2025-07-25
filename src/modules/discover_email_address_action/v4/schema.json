@@ -4,16 +4,13 @@
   },
   "fields": [
     {
-      "id": "email",
+      "id": "domain",
       "type": "string",
-      "label": "Email Address",
-      "validation": { 
-        "required": true,
-        "format": "email"
-      },
+      "label": "Domain",
+      "validation": { "required": true },
       "ui_options": {
         "ui_widget": "input",
-        "placeholder": "john.doe@example.com"
+        "placeholder": "example.com"
       }
     },
     {
@@ -26,6 +23,6 @@
     }
   ],
   "ui_options": {
-    "ui_order": ["email", "api_connection"]
+    "ui_order": ["domain", "api_connection"]
   }
 }

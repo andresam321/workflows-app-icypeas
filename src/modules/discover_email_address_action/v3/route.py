@@ -1,52 +1,55 @@
 from workflows_cdk import Response, Request
 from flask import request as flask_request
 from main import router
-
+import requests
+import os
 
 @router.route("/execute", methods=["GET", "POST"])
 def execute():
-    request = Request(flask_request)
-    data = request.data
-
-    # Example input Icypeas sends via webhookUrlItem
-    # {
-    #   "externalId": "row-123",
-    #   "item": {
-    #     "_id": "...",
-    #     "status": "FOUND",
-    #     "email": "john.doe@company.com",
-    #     ...
-    #   }
-    # }
-
-    item = data.get("item", {})
-    external_id = data.get("externalId", None)
-
-    output = [{
-        "email": item.get("email"),
-        "status": item.get("status"),
-        "source": item.get("source"),
-        "score": item.get("score"),
-        "verified": item.get("verified"),
-        "type": item.get("type"),
-        "external_id": external_id,
-        "raw": item  # optional: return full raw result
-    }]
-
-    return Response(data=output, metadata={"affected_rows": len(output)})
-
-
-@router.route("/webhook/item", methods=["POST"])
-def icypeas_webhook_item():
-    payload = flask_request.get_json(force=True)
-    print("Received row result:", payload)
-
-    # You can access result like:
-    item = payload.get("item", {})
-    external_id = payload.get("externalId")
-
-    # Optional: store, forward, or log
-    return Response(data={"message": "Webhook received"}, metadata={"status": "ok"})
+    # request = Request(flask_request)
+    # data = request.data
+    data = flask_request.get_json(force=True)
+    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
+    
+    email = data.get("email", "")
+    
+    url = "https://app.icypeas.com/api/email-verification"
+    payload = {
+        "email": email
+    }
+    
+    headers = {
+        "Authorization": api_key,
+        "Content-Type": "application/json"
+    }
+    print("headers", headers)
+    print("payload", payload)
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        result = response.json()
+        print(result)
+        # Return the search ID for later retrieval
+        if result.get("success") and result.get("item"):
+            return Response(
+                data={
+                    "search_id": result["item"].get("_id"),
+                    "status": result["item"].get("status", "NONE"),
+                    "email": email
+                },
+                metadata={"status": "success"}
+            )
+        else:
+            return Response(
+                data={"error": "Failed to initiate verification"},
+                metadata={"status": "failed"}
+            )
+            
+    except requests.exceptions.RequestException as e:
+        return Response(
+            data={"error": str(e)},
+            metadata={"status": "failed"}
+        )
 
 # @router.route("/content", methods=["GET", "POST"])
 # def content():

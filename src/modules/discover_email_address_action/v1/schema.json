@@ -4,26 +4,43 @@
   },
   "fields": [
     {
-      "id": "first_field",
+      "id": "first_name",
       "type": "string",
-      "label": "First Field Label",
-      "validation": {
-        "required": true
-      },
+      "label": "First Name",
+      "validation": { "required": false },
       "ui_options": {
         "ui_widget": "input"
       }
     },
     {
-      "id": "second_field",
+      "id": "last_name",
       "type": "string",
-      "label": "Second Field Label",
-      "validation": {
-        "required": true
+      "label": "Last Name",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "input"
       }
+    },
+    {
+      "id": "domain_or_company",
+      "type": "string",
+      "label": "Domain or Company",
+      "validation": { "required": true },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "example.com or Company Name"
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
     }
   ],
   "ui_options": {
-    "ui_order": ["first_field", "second_field"]
+    "ui_order": ["first_name", "last_name", "domain_or_company", "api_connection"]
   }
 }

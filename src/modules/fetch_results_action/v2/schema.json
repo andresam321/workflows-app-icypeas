@@ -21,9 +21,17 @@
       "validation": {
         "required": true
       }
+    },
+        {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "NeverBounce API Connection",
+      "description": "Select your connected NeverBounce API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
     }
   ],
   "ui_options": {
-    "ui_order": ["first_field", "second_field"]
+    "ui_order": ["first_field", "second_field", "api_connection"]
   }
 }

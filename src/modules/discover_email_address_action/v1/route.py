@@ -20,59 +20,55 @@ load_dotenv()
 #     api_key = os.getenv("NEVERBOUNCE_API_KEY")
 #     return Response(data={"NEVERBOUNCE_API_KEY": api_key}, metadata={"affected_rows": 0})
 
-@router.route("/execute", methods=["POST", "GET"])
+
+@router.route("/execute", methods=["GET", "POST"])
 def execute():
+    # request = Request(flask_request)
+    # data = request.data
     data = flask_request.get_json(force=True)
-
-    firstname = data.get("firstname")
-    lastname = data.get("lastname")
-    domain_or_company = data.get("domainOrCompany")
-
-    api_key = os.getenv("ICYPEAS_API_KEY", "").strip()
+    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
+    
+    first_name = data.get("firstname", "")
+    last_name = data.get("lastname", "")
+    domain_or_company = data.get("domainOrCompany", "")
+    
+    url = "https://app.icypeas.com/api/email-search"
+    payload = {
+        "firstname": first_name,
+        "lastname": last_name,
+        "domainOrCompany": domain_or_company
+    }
+    print(f"Payload: {json.dumps(payload, indent=2)}")
     headers = {
         "Authorization": api_key,
         "Content-Type": "application/json"
     }
-
-    # Submit email-search job
-    payload = {
-        "firstname": firstname,
-        "lastname": lastname,
-        "domainOrCompany": domain_or_company
-    }
-
-    create_response = requests.post(
-        "https://app.icypeas.com/api/email-search",
-        headers=headers,
-        json=payload
-    )
-
-    if create_response.status_code != 200:
-        return Response(data={
-            "success": False,
-            "message": "Failed to create email search job",
-            "status_code": create_response.status_code,
-            "response": create_response.text
-        })
-
-    create_data = create_response.json()
-
-    # Handle invalid input (e.g., user not found)
-    if create_data.get("error") == "UserNotFoundError":
-        return Response(data={
-            "success": False,
-            "message": "User not found — check name or domain.",
-            "code": create_data.get("code")
-        })
-
-    job_id = create_data["item"]["_id"]
-
-    return Response(data={
-        "success": True,
-        "job_id": job_id,
-        "status": "pending",
-        "note": "Call again with this job_id to fetch the result later."
-    })
+    print(f"Headers: {json.dumps(headers, indent=2)}")
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        result = response.json()
+        
+        # Return the search ID for later retrieval
+        if result.get("success") and result.get("item"):
+            return Response(
+                data={
+                    "search_id": result["item"].get("_id"),
+                    "status": result["item"].get("status", "NONE")
+                },
+                metadata={"status": "success"}
+            )
+        else:
+            return Response(
+                data={"error": "Failed to initiate search"},
+                metadata={"status": "failed"}
+            )
+            
+    except requests.exceptions.RequestException as e:
+        return Response(
+            data={"error": str(e)},
+            metadata={"status": "failed"}
+        )
 
 # @router.route("/content", methods=["GET", "POST"])
 # def content():

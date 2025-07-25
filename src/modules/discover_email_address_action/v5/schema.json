@@ -4,16 +4,23 @@
   },
   "fields": [
     {
-      "id": "email",
+      "id": "job_id",
       "type": "string",
-      "label": "Email Address",
-      "validation": { 
-        "required": true,
-        "format": "email"
-      },
+      "label": "Job ID",
+      "validation": { "required": true },
       "ui_options": {
         "ui_widget": "input",
-        "placeholder": "john.doe@example.com"
+        "placeholder": "Enter the job ID from previous search"
+      }
+    },
+    {
+      "id": "is_bulk",
+      "type": "boolean",
+      "label": "Is Bulk Search",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "checkbox",
+        "default": false
       }
     },
     {
@@ -26,6 +33,6 @@
     }
   ],
   "ui_options": {
-    "ui_order": ["email", "api_connection"]
+    "ui_order": ["job_id", "is_bulk", "api_connection"]
   }
 }

@@ -1,11 +1,8 @@
 from workflows_cdk import Response, Request
 from flask import request as flask_request
-from main import router
-import os
 import requests
-import json
-from dotenv import load_dotenv
-load_dotenv()
+import os
+from main import router
 
 @router.route("/execute", methods=["GET", "POST"])
 def execute():
@@ -14,45 +11,84 @@ def execute():
     data = flask_request.get_json(force=True)
     api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
     
-    task = data.get("task", "email-search")
-    name = data.get("name", "Bulk Search")
-    bulk_data = data.get("data", [])
+    job_id = data.get("id", "")
+    is_bulk = data.get("file", False)
     
-    url = "https://app.icypeas.com/api/bulk-search"
-    payload = {
-        "task": task,
-        "name": name,
-        "data": bulk_data
-    }
+    # For single searches or bulk results
+    url = "https://app.icypeas.com/api/bulk-single-searchs/read"
+    
+    payload = {}
+    if is_bulk:
+        payload["file"] = job_id  # For bulk searches, use file parameter
+    else:
+        payload["id"] = job_id    # For single searches, use id parameter
     
     headers = {
         "Authorization": api_key,
         "Content-Type": "application/json"
     }
-    print(f"Payload: {json.dumps(payload, indent=2)}")
+    print(f"Requesting results for job_id: {job_id}, is_bulk: {is_bulk}")
+    print(f"Payload: {payload}")
     print(f"Headers: {headers}")
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
         result = response.json()
-        print(f"Response: {json.dumps(result, indent=2)}")
-        # Return the bulk job ID
-        if result.get("success"):
+        
+        if not result.get("success"):
             return Response(
-                data={
-                    "job_id": result.get("file"),
-                    "name": name,
-                    "task": task,
-                    "total_items": len(bulk_data)
-                },
-                metadata={"status": "success"}
-            )
-        else:
-            return Response(
-                data={"error": "Failed to initiate bulk search"},
+                data={"error": "Failed to retrieve results"},
                 metadata={"status": "failed"}
             )
+        
+        items = result.get("items", [])
+        
+        if not items:
+            return Response(
+                data={"message": "No results found yet"},
+                metadata={"status": "still processing"}
+            )
+        
+        # Check if all items are processed
+        all_processed = True
+        results = []
+        
+        for item in items:
+            status = item.get("status", "NONE")
             
+            # If any item is still processing
+            if status in ["NONE", "SCHEDULED", "IN_PROGRESS"]:
+                all_processed = False
+                continue
+            
+            # Extract the results
+            item_result = {
+                "status": status,
+                "order": item.get("order", 0),
+                "results": item.get("results", {}),
+                "external_id": item.get("userData", {}).get("externalId", "")
+            }
+            results.append(item_result)
+        
+        if not all_processed:
+            return Response(
+                data={
+                    "processed": len(results),
+                    "total": len(items),
+                    "partial_results": results
+                },
+                metadata={"status": "still processing"}
+            )
+        
+        # All items processed
+        return Response(
+            data={
+                "total": len(items),
+                "results": results
+            },
+            metadata={"status": "complete"}
+        )
+        
     except requests.exceptions.RequestException as e:
         return Response(
             data={"error": str(e)},

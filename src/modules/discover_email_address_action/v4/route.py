@@ -1,11 +1,8 @@
 from workflows_cdk import Response, Request
 from flask import request as flask_request
-from main import router
-import os
 import requests
-import json
-from dotenv import load_dotenv
-load_dotenv()
+import os
+from main import router
 
 @router.route("/execute", methods=["GET", "POST"])
 def execute():
@@ -14,42 +11,38 @@ def execute():
     data = flask_request.get_json(force=True)
     api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
     
-    task = data.get("task", "email-search")
-    name = data.get("name", "Bulk Search")
-    bulk_data = data.get("data", [])
+    domain = data.get("domainOrCompany", "")
     
-    url = "https://app.icypeas.com/api/bulk-search"
+    # TODO: Confirm endpoint - using domain-scan as it seems to be the discovery endpoint
+    url = "https://app.icypeas.com/api/domain-search"
     payload = {
-        "task": task,
-        "name": name,
-        "data": bulk_data
+        "domainOrCompany": domain
     }
     
     headers = {
         "Authorization": api_key,
         "Content-Type": "application/json"
     }
-    print(f"Payload: {json.dumps(payload, indent=2)}")
+    print(f"Payload: {payload}")
     print(f"Headers: {headers}")
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
         result = response.json()
-        print(f"Response: {json.dumps(result, indent=2)}")
-        # Return the bulk job ID
-        if result.get("success"):
+        print(f"Response: {result}")
+        # Return the search ID for later retrieval
+        if result.get("success") and result.get("item"):
             return Response(
                 data={
-                    "job_id": result.get("file"),
-                    "name": name,
-                    "task": task,
-                    "total_items": len(bulk_data)
+                    "search_id": result["item"].get("_id"),
+                    "status": result["item"].get("status", "NONE"),
+                    "domain": domain
                 },
                 metadata={"status": "success"}
             )
         else:
             return Response(
-                data={"error": "Failed to initiate bulk search"},
+                data={"error": "Failed to initiate domain scan"},
                 metadata={"status": "failed"}
             )
             
@@ -58,7 +51,6 @@ def execute():
             data={"error": str(e)},
             metadata={"status": "failed"}
         )
-
 # @router.route("/content", methods=["GET", "POST"])
 # def content():
 #     """

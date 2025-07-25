@@ -1,4 +1,4 @@
 module_settings:
-  module_name: "Bulk Email Finder"
-  module_description: "Find multiple business emails by providing a list of names and domains."
+  module_name: "Verify a Single Email Address"
+  module_description: "Uses Icypeas to verify if a specific email address exists and is valid."
 
