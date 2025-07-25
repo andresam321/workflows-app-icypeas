@@ -1,29 +1,76 @@
-from workflows_cdk import Response, Request
+from workflows_cdk import Request, Response
 from flask import request as flask_request
 from main import router
+import requests
+import os
 
-@router.route("/execute", methods=["GET", "POST"])
+@router.route("/execute", methods=["POST", "GET"])
 def execute():
     """
-    This is the function that is executed when you click on "Run" on a workflow that uses this action.
+    Find LinkedIn company URLs based on provided company names or domains.
+    Supports both single and bulk requests.
     """
-    request = Request(flask_request)
+    # request = Request(flask_request)
+    # data = request.data
+    data = flask_request.get_json(force=True)
+    # Get API key
+    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
+    if not api_key:
+        return Response(
+            data={"error": "API key not provided"},
+            metadata={"status": "failed", "code": 401}
+        )
 
-    # The data object of request.data will contain all of the fields filled in the form and defined in the schema.json file.
-    data = request.data
+    headers = {
+        "Authorization": api_key,
+        "Content-Type": "application/json"
+    }
 
-    # Your logic here
-    # Here you can add your logic to execute the action which may consist of, for example:
-    # - calling an API
-    # - doing some calculations
-    # - doing some data transformations
-    # - validating data
-    
+    try:
+        company = data.get("company")  # for single company search
+        companies = data.get("companies")  # for bulk company search (list of strings)
 
-    output = []
+        if company:
+            # Single company search
+            url = "https://app.icypeas.com/api/url-search/company"
+            payload = {
+                "companyOrDomain": company
+            }
+            response = requests.post(url, json=payload, headers=headers)
 
-    return Response(data=output, metadata={"affected_rows": len(output)})
+        elif companies:
+            # Bulk company search
+            url = "https://app.icypeas.com/api/url-search"
+            payload = {
+                "type": "company",
+                "data": [{"companyOrDomain": name} for name in companies[:50]]
+            }
+            response = requests.post(url, json=payload, headers=headers)
 
+        else:
+            return Response(
+                data={"error": "Missing 'company' or 'companies' in request data"},
+                metadata={"status": "failed", "code": 400}
+            )
+
+        response.raise_for_status()
+        result = response.json()
+
+        return Response(
+            data=result,
+            metadata={"status": "success"}
+        )
+
+    except requests.exceptions.RequestException as e:
+        return Response(
+            data={"error": f"Request failed: {str(e)}"},
+            metadata={"status": "failed", "code": getattr(e.response, 'status_code', 500)}
+        )
+    except Exception as e:
+        return Response(
+            data={"error": f"Unexpected error: {str(e)}"},
+            metadata={"status": "failed", "code": 500}
+        )
 
 @router.route("/content", methods=["GET", "POST"])
 def content():

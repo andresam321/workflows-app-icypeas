@@ -4,26 +4,34 @@
   },
   "fields": [
     {
-      "id": "first_field",
+      "id": "company_url",
       "type": "string",
-      "label": "First Field Label",
-      "validation": {
-        "required": true
-      },
+      "label": "Company URL (Single)",
+      "validation": { "required": false },
       "ui_options": {
-        "ui_widget": "input"
+        "ui_widget": "input",
+        "placeholder": "https://www.linkedin.com/company/example"
       }
     },
     {
-      "id": "second_field",
-      "type": "string",
-      "label": "Second Field Label",
-      "validation": {
-        "required": true
+      "id": "company_urls",
+      "type": "array",
+      "label": "Company URLs (Bulk)",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "json_editor",
+        "placeholder": "[\"https://www.linkedin.com/company/company1\", \"https://www.linkedin.com/company/company2\"]"
       }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key",
+      "allowed_connection_management_types": ["managed", "custom"]
     }
   ],
   "ui_options": {
-    "ui_order": ["first_field", "second_field"]
+    "ui_order": ["company_url", "company_urls", "api_connection"]
   }
 }

@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "job_id",
+      "type": "string",
+      "label": "Job ID",
+      "validation": { "required": true },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "Enter the job ID from previous search"
+      }
+    },
+    {
+      "id": "is_bulk",
+      "type": "boolean",
+      "label": "Is Bulk Search",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "checkbox",
+        "default": false
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["job_id", "is_bulk", "api_connection"]
+  }
+}

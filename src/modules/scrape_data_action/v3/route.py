@@ -1,28 +1,101 @@
-from workflows_cdk import Response, Request
+from workflows_cdk import Request, Response
 from flask import request as flask_request
 from main import router
+import requests
+import os
 
-@router.route("/execute", methods=["GET", "POST"])
+@router.route("/execute", methods=["POST", "GET"])
 def execute():
     """
-    This is the function that is executed when you click on "Run" on a workflow that uses this action.
+    Discover LinkedIn profile URLs using Icypeas.
+    Supports single and bulk profile lookup.
     """
-    request = Request(flask_request)
+    data = flask_request.get_json(force=True)
 
-    # The data object of request.data will contain all of the fields filled in the form and defined in the schema.json file.
-    data = request.data
+    # Get API key from connection or environment
+    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
 
-    # Your logic here
-    # Here you can add your logic to execute the action which may consist of, for example:
-    # - calling an API
-    # - doing some calculations
-    # - doing some data transformations
-    # - validating data
-    
+    if not api_key:
+        return Response(
+            data={"error": "API key not provided"},
+            metadata={"status": "failed", "code": 401}
+        )
 
-    output = []
+    headers = {
+        "Authorization": api_key,
+        "Content-Type": "application/json"
+    }
+#     {
+#   "data": [
+#     {
+#       "firstname": "Elon",
+#       "lastname": "Musk",
+#       "companyOrDomain": "Tesla"
+#     },
+#     {
+#       "firstname": "Tim",
+#       "lastname": "Cook",
+#       "companyOrDomain": "Apple"
+#     },
+#     {
+#       "firstname": "Mark",
+#       "lastname": "Zuckerberg",
+#       "companyOrDomain": "Meta"
+#     }
+#   ]
+# }
 
-    return Response(data=output, metadata={"affected_rows": len(output)})
+    try:
+        # Check if this is a bulk or single request
+        if "data" in data and isinstance(data["data"], list):
+            # Bulk search
+            url = "https://app.icypeas.com/api/url-search"
+            payload = {
+                "type": "profile",
+                "data": data["data"]
+            }
+            print(f"Bulk search payload: {payload}")
+        elif all(k in data for k in ("firstname", "lastname")):
+            # Single search
+            #{
+            #   "firstname": "Marc",
+            #   "lastname": "Lachabody",
+            #   "companyOrDomain": "nec technologies"
+            # }
+
+            url = "https://app.icypeas.com/api/url-search/profile"
+            payload = {
+                "firstname": data["firstname"],
+                "lastname": data["lastname"],
+                "companyOrDomain": data.get("companyOrDomain", ""),
+                "jobTitle": data.get("jobTitle", "")
+            }
+        else:
+            return Response(
+                data={"error": "Invalid input. Provide either single profile fields or a list of data."},
+                metadata={"status": "failed", "code": 400}
+            )
+
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        print(f"Response from Icypeas: {response.json()}")
+        response = response.json()
+        res = response.get("data", {})
+        return Response(
+            data=res,
+            metadata={"status": "success"}
+        )
+
+    except requests.exceptions.RequestException as e:
+        return Response(
+            data={"error": f"Request failed: {str(e)}"},
+            metadata={"status": "failed", "code": getattr(e.response, 'status_code', 500)}
+        )
+    except Exception as e:
+        return Response(
+            data={"error": f"Unexpected error: {str(e)}"},
+            metadata={"status": "failed", "code": 500}
+        )
 
 
 @router.route("/content", methods=["GET", "POST"])

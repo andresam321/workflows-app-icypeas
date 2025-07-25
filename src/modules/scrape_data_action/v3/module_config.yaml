@@ -1,3 +1,4 @@
 module_settings:
   module_name: "Find Profile URLs"
-  module_description: "Find public profile URLs for individuals based on their name and company."
+  module_description: "Search and find LinkedIn profile URLs based on criteria like name, company, location, or job title. Returns a list of matching profile URLs. Note: This endpoint needs verification with Icypeas documentation."
+

@@ -4,26 +4,37 @@
   },
   "fields": [
     {
-      "id": "first_field",
+      "id": "company",
       "type": "string",
-      "label": "First Field Label",
-      "validation": {
-        "required": true
-      },
+      "label": "Single Company (Optional)",
+      "validation": { "required": false },
       "ui_options": {
-        "ui_widget": "input"
+        "ui_widget": "input",
+        "placeholder": "e.g., nec technologies"
       }
     },
     {
-      "id": "second_field",
-      "type": "string",
-      "label": "Second Field Label",
-      "validation": {
-        "required": true
+      "id": "companies",
+      "type": "array",
+      "label": "Bulk Companies (Max 50)",
+      "validation": { "required": false },
+      "items": {
+        "type": "string"
+      },
+      "ui_options": {
+        "ui_widget": "code_editor",
+        "placeholder": "[\"nec technologies\", \"netflix\"]"
       }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key",
+      "allowed_connection_management_types": ["managed", "custom"]
     }
   ],
   "ui_options": {
-    "ui_order": ["first_field", "second_field"]
+    "ui_order": ["company", "companies", "api_connection"]
   }
 }

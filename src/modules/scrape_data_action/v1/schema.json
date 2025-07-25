@@ -4,26 +4,34 @@
   },
   "fields": [
     {
-      "id": "first_field",
+      "id": "profile_url",
       "type": "string",
-      "label": "First Field Label",
-      "validation": {
-        "required": true
-      },
+      "label": "Profile URL (Single)",
+      "validation": { "required": false },
       "ui_options": {
-        "ui_widget": "input"
+        "ui_widget": "input",
+        "placeholder": "https://www.linkedin.com/in/username"
       }
     },
     {
-      "id": "second_field",
-      "type": "string",
-      "label": "Second Field Label",
-      "validation": {
-        "required": true
+      "id": "profile_urls",
+      "type": "array",
+      "label": "Profile URLs (Bulk)",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "json_editor",
+        "placeholder": "[\"https://www.linkedin.com/in/user1\", \"https://www.linkedin.com/in/user2\"]"
       }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key",
+      "allowed_connection_management_types": ["managed", "custom"]
     }
   ],
   "ui_options": {
-    "ui_order": ["first_field", "second_field"]
+    "ui_order": ["profile_url", "profile_urls", "api_connection"]
   }
 }

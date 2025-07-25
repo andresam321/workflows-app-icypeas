@@ -1,29 +1,80 @@
-from workflows_cdk import Response, Request
+from workflows_cdk import Request, Response
 from flask import request as flask_request
 from main import router
+import requests
+import os
 
-@router.route("/execute", methods=["GET", "POST"])
+@router.route("/execute", methods=["POST", "GET"])
 def execute():
     """
-    This is the function that is executed when you click on "Run" on a workflow that uses this action.
+    Scrape LinkedIn profile(s) to get user information.
+    Supports both single profile (GET) and bulk profiles (POST).
     """
-    request = Request(flask_request)
+    # request = Request(flask_request)
+    # data = request.data
+    data = flask_request.get_json(force=True)
 
-    # The data object of request.data will contain all of the fields filled in the form and defined in the schema.json file.
-    data = request.data
-
-    # Your logic here
-    # Here you can add your logic to execute the action which may consist of, for example:
-    # - calling an API
-    # - doing some calculations
-    # - doing some data transformations
-    # - validating data
+    # Get API key from connection or environment
+    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
     
-
-    output = []
-
-    return Response(data=output, metadata={"affected_rows": len(output)})
-
+    if not api_key:
+        return Response(
+            data={"error": "API key not provided"},
+            metadata={"status": "failed", "code": 401}
+        )
+    
+    headers = {
+        "Authorization": api_key,
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        # Check if it's a single profile request or bulk
+        ## input with profile:"https://www.linkedin.com/in/some-profile"
+        profile_url = data.get("profile")
+        ## input with profile_urls:["https://www.linkedin.com/in/some-profile1", "https://www.linkedin.com/in/some-profile2"]
+        profile_urls = data.get("profile_urls", [])
+        
+        if profile_url:
+            # Single profile scrape (GET method)
+            url = f"https://app.icypeas.com/api/scrape/profile?url={profile_url}"
+            response = requests.get(url, headers=headers)
+        elif profile_urls:
+            # Bulk profiles scrape (POST method)
+            url = "https://app.icypeas.com/api/scrape"
+            payload = {
+                "type": "profile",
+                "data": profile_urls[:50]  # Max 50 profiles per request
+            }
+            response = requests.post(url, json=payload, headers=headers)
+            print(f"Scraping {len(profile_urls)} profiles")
+            print("response:", response)
+            print(profile_urls)
+        else:
+            return Response(
+                data={"error": "No profile URL(s) provided"},
+                metadata={"status": "failed", "code": 400}
+            )
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        # Return the job ID or results
+        return Response(
+            data=result,
+            metadata={"status": "success"}
+        )
+        
+    except requests.exceptions.RequestException as e:
+        return Response(
+            data={"error": f"Request failed: {str(e)}"},
+            metadata={"status": "failed", "code": getattr(e.response, 'status_code', 500)}
+        )
+    except Exception as e:
+        return Response(
+            data={"error": f"Unexpected error: {str(e)}"},
+            metadata={"status": "failed", "code": 500}
+        )
 
 @router.route("/content", methods=["GET", "POST"])
 def content():

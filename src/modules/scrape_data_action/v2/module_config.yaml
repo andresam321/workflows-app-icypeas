@@ -1,4 +1,4 @@
 module_settings:
-  module_name: "Scrape Companies"
-  module_description: "Scrape company-related data such as size, industry, and contact information using company name or domain."
+  module_name: "Scrape LinkedIn Companies"
+  module_description: "Scrape LinkedIn company page(s) to extract company information including name, industry, size, location, and other business details. Supports both single and bulk company scraping (max 50 per request)."
 
