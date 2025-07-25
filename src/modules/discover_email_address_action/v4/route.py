@@ -6,14 +6,13 @@ from main import router
 
 @router.route("/execute", methods=["GET", "POST"])
 def execute():
-    # request = Request(flask_request)
+    request = Request(flask_request)
     # data = request.data
     data = flask_request.get_json(force=True)
     api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
     
     domain = data.get("domainOrCompany", "")
-    
-    # TODO: Confirm endpoint - using domain-scan as it seems to be the discovery endpoint
+
     url = "https://app.icypeas.com/api/domain-search"
     payload = {
         "domainOrCompany": domain
