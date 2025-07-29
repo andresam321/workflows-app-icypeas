@@ -16,7 +16,7 @@ def extract_api_key(api_connection: dict) -> str:
 def execute():
     request = Request(flask_request)
     data = request.data
-
+    # data = flask_request.get_json(force=True)
     # api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
     task = data.get("task", "email-search")
     name = data.get("name", "Bulk Search")

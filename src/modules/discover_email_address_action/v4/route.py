@@ -4,12 +4,17 @@ import requests
 import os
 from main import router
 
+def extract_api_key(api_connection: dict) -> str:
+    if not api_connection:
+        return None
+    return api_connection.get("connection_data", {}).get("value", {}).get("api_key_bearer")
+
 @router.route("/execute", methods=["GET", "POST"])
 def execute():
     request = Request(flask_request)
-    # data = request.data
-    data = flask_request.get_json(force=True)
-    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
+    data = request.data
+    # data = flask_request.get_json(force=True)
+    # api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
     
     domain = data.get("domainOrCompany", "")
 
@@ -19,7 +24,7 @@ def execute():
     }
     
     headers = {
-        "Authorization": api_key,
+        "Authorization": extract_api_key(data.get("api_connection")),
         "Content-Type": "application/json"
     }
     print(f"Payload: {payload}")

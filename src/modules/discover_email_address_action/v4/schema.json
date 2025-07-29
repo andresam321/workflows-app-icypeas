@@ -7,11 +7,8 @@
       "id": "domain",
       "type": "string",
       "label": "Domain",
-      "validation": { "required": true },
-      "ui_options": {
-        "ui_widget": "input",
-        "placeholder": "example.com"
-      }
+      "validation": { "required": true }, 
+      "description": "The domain to discover email addresses for. For example, 'example.com'." 
     },
     {
       "type": "connection",

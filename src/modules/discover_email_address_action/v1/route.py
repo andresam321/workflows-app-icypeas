@@ -19,14 +19,17 @@ load_dotenv()
 # def env_check():
 #     api_key = os.getenv("NEVERBOUNCE_API_KEY")
 #     return Response(data={"NEVERBOUNCE_API_KEY": api_key}, metadata={"affected_rows": 0})
-
+def extract_api_key(api_connection: dict) -> str:
+    if not api_connection:
+        return None
+    return api_connection.get("connection_data", {}).get("value", {}).get("api_key_bearer")
 
 @router.route("/execute", methods=["GET", "POST"])
 def execute():
     request = Request(flask_request)
     data = request.data
     # data = flask_request.get_json(force=True)
-    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
+    # api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
     
     first_name = data.get("firstname", "")
     last_name = data.get("lastname", "")
@@ -40,7 +43,7 @@ def execute():
     }
     print(f"Payload: {json.dumps(payload, indent=2)}")
     headers = {
-        "Authorization": api_key,
+        "Authorization": extract_api_key(data.get("api_connection")),
         "Content-Type": "application/json"
     }
     print(f"Headers: {json.dumps(headers, indent=2)}")

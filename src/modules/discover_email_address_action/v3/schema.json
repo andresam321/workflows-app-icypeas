@@ -8,12 +8,7 @@
       "type": "string",
       "label": "Email Address",
       "validation": { 
-        "required": true,
-        "format": "email"
-      },
-      "ui_options": {
-        "ui_widget": "input",
-        "placeholder": "john.doe@example.com"
+        "required": true
       }
     },
     {
