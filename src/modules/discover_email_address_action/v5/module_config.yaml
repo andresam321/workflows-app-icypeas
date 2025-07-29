@@ -1,4 +1,4 @@
 module_settings:
-  module_name: "Fetch Job Results"
+  module_name: "Fetch Email(s) Job Results"
   module_description: "Retrieve results from a bulk search job or single search using the job ID. Returns processed email addresses with verification status."
 

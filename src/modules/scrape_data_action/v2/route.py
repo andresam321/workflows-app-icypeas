@@ -4,63 +4,62 @@ from main import router
 import requests
 import os
 
+def extract_api_key(api_connection: dict) -> str:
+    if not api_connection:
+        return None
+    return api_connection.get("connection_data", {}).get("value", {}).get("api_key_bearer")
+
 @router.route("/execute", methods=["POST", "GET"])
 def execute():
     """
-    Scrape LinkedIn company page(s) to get company information.
-    Supports both single company (GET) and bulk companies (POST).
+    Scrape LinkedIn company page(s) to get company information using Icypeas API.
+    Automatically detects whether to use single or bulk scraping based on input length.
     """
     request = Request(flask_request)
     data = request.data
-    # data = flask_request.get_json(force=True)
+
     # Get API key from connection or environment
-    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
-    
+    api_key = extract_api_key(data.get("api_connection")) or os.getenv("ICYPEAS_API_KEY")
     if not api_key:
         return Response(
             data={"error": "API key not provided"},
             metadata={"status": "failed", "code": 401}
         )
-    
+
     headers = {
-        "Authorization": api_key,
+        "Authorization": extract_api_key(data.get("api_connection")),
         "Content-Type": "application/json"
     }
-    
+
     try:
-        # Check if it's a single company request or bulk
-        company_url = data.get("company_url")
-        company_urls = data.get("company_urls", [])
-        
-        if company_url:
-            # Single company scrape (GET method)
-            url = f"https://app.icypeas.com/api/scrape/company?url={company_url}"
+        # Parse and clean company URL input
+        raw_input = data.get("companies", "")
+        url_list = [url.strip() for url in raw_input.replace("\n", ",").split(",") if url.strip()]
+
+        if not url_list:
+            return Response(
+                data={"error": "No valid company URL(s) provided."},
+                metadata={"status": "failed", "code": 400}
+            )
+
+        # Use single or bulk endpoint based on URL count
+        if len(url_list) == 1:
+            url = f"https://app.icypeas.com/api/scrape/company?url={url_list[0]}"
             response = requests.get(url, headers=headers)
-        elif company_urls:
-            # Bulk companies scrape (POST method)
+        else:
             url = "https://app.icypeas.com/api/scrape"
             payload = {
                 "type": "company",
-                "data": company_urls[:50]  # Max 50 companies per request
+                "data": url_list[:50]
             }
             response = requests.post(url, json=payload, headers=headers)
-        else:
-            return Response(
-                data={"error": "No company URL(s) provided"},
-                metadata={"status": "failed", "code": 400}
-            )
-        
+
         response.raise_for_status()
-        result = response.json()
-        print(headers)
-        print(payload)
-        print(result)
-        # Return the job ID or results
         return Response(
-            data=result,
+            data=response.json(),
             metadata={"status": "success"}
         )
-        
+
     except requests.exceptions.RequestException as e:
         return Response(
             data={"error": f"Request failed: {str(e)}"},
@@ -71,6 +70,7 @@ def execute():
             data={"error": f"Unexpected error: {str(e)}"},
             metadata={"status": "failed", "code": 500}
         )
+
 
 # @router.route("/content", methods=["GET", "POST"])
 # def content():

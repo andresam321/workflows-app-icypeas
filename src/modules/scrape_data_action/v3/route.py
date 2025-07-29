@@ -1,21 +1,26 @@
 from workflows_cdk import Request, Response
-from flask import request as flask_request
+from flask import request as flask_request, jsonify
+import json
 from main import router
 import requests
 import os
+
+def extract_api_key(api_connection: dict) -> str:
+    if not api_connection:
+        return None
+    return api_connection.get("connection_data", {}).get("value", {}).get("api_key_bearer")
 
 @router.route("/execute", methods=["POST", "GET"])
 def execute():
     """
     Discover LinkedIn profile URLs using Icypeas.
-    Supports single and bulk profile lookup.
+    Accepts JSON string of one or more profiles, and automatically routes
+    to the appropriate Icypeas endpoint to optimize credit usage.
     """
-    # data = flask_request.get_json(force=True)
     request = Request(flask_request)
     data = request.data
-    # Get API key from connection or environment
-    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
-
+    # print(f"Received data: {data}")
+    api_key = extract_api_key(data.get("api_connection"))
     if not api_key:
         return Response(
             data={"error": "API key not provided"},
@@ -26,64 +31,64 @@ def execute():
         "Authorization": api_key,
         "Content-Type": "application/json"
     }
-#     {
-#   "data": [
-#     {
-#       "firstname": "Elon",
-#       "lastname": "Musk",
-#       "companyOrDomain": "Tesla"
-#     },
-#     {
-#       "firstname": "Tim",
-#       "lastname": "Cook",
-#       "companyOrDomain": "Apple"
-#     },
-#     {
-#       "firstname": "Mark",
-#       "lastname": "Zuckerberg",
-#       "companyOrDomain": "Meta"
-#     }
-#   ]
-# }
-
+    
     try:
-        # Check if this is a bulk or single request
-        if "data" in data and isinstance(data["data"], list):
-            # Bulk search
-            url = "https://app.icypeas.com/api/url-search"
-            payload = {
-                "type": "profile",
-                "data": data["data"]
-            }
-            print(f"Bulk search payload: {payload}")
-        elif all(k in data for k in ("firstname", "lastname")):
-            # Single search
-            #{
-            #   "firstname": "Marc",
-            #   "lastname": "Lachabody",
-            #   "companyOrDomain": "nec technologies"
-            # }
+        profiles_raw = data.get("profiles")
+        
+        if not profiles_raw:
+            return Response(
+                data={"error": "Missing 'profiles' input."},
+                metadata={"status": "failed", "code": 400}
+            )
 
-            url = "https://app.icypeas.com/api/url-search/profile"
-            payload = {
-                "firstname": data["firstname"],
-                "lastname": data["lastname"],
-                "companyOrDomain": data.get("companyOrDomain", ""),
-                "jobTitle": data.get("jobTitle", "")
-            }
+        try:
+            if isinstance(profiles_raw, list):
+                profiles_parsed = profiles_raw
+            else:
+                profiles_parsed = json.loads(profiles_raw)
+        except Exception as e:
+            return Response(
+                data={"error": f"Invalid JSON format in 'profiles': {str(e)}"},
+                metadata={"status": "failed", "code": 400}
+            )
+        # print(f"Parsed profiles: {profiles_parsed}")
+        if isinstance(profiles_parsed, list):
+            # print(f"Number of profiles parsed: {len(profiles_parsed)}")
+            if len(profiles_parsed) == 1:
+                # Route to single profile endpoint
+                profile = profiles_parsed[0]
+                print(f"Single profile data: {profile}")
+                url = "https://app.icypeas.com/api/url-search/profile"
+                payload = {
+                    "firstname": profile.get("firstname", ""),
+                    "lastname": profile.get("lastname", ""),
+                    "companyOrDomain": profile.get("companyOrDomain", ""),
+                    "jobTitle": profile.get("jobTitle", "")
+                }
+                if not payload["firstname"] or not payload["lastname"]:
+                    return Response(
+                        data={"error": "Both 'firstname' and 'lastname' are required."},
+                        metadata={"status": "failed", "code": 400}
+                    )
+            else:
+                # Route to bulk profile endpoint
+                url = "https://app.icypeas.com/api/url-search"
+                payload = {
+                    "type": "profile",
+                    "data": profiles_parsed[:50]
+                }
         else:
             return Response(
-                data={"error": "Invalid input. Provide either single profile fields or a list of data."},
+                data={"error": "Expected a list of profiles."},
                 metadata={"status": "failed", "code": 400}
             )
 
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
-        print(f"Response from Icypeas: {response.json()}")
-        response = response.json()
-        res = response.get("data", {})
+        response_data = response.json()
+        # print(f"Response from Icypeas: {response_data}")
         return Response(
-            data=res,
+            data=response_data,
             metadata={"status": "success"}
         )
 
@@ -97,6 +102,7 @@ def execute():
             data={"error": f"Unexpected error: {str(e)}"},
             metadata={"status": "failed", "code": 500}
         )
+
 
 
 # @router.route("/content", methods=["GET", "POST"])

@@ -3,18 +3,24 @@ from flask import request as flask_request
 from main import router
 import requests
 import os
+import json
+def extract_api_key(api_connection: dict) -> str:
+    if not api_connection:
+        return None
+    return api_connection.get("connection_data", {}).get("value", {}).get("api_key_bearer")
 
 @router.route("/execute", methods=["POST", "GET"])
 def execute():
     """
     Find LinkedIn company URLs based on provided company names or domains.
-    Supports both single and bulk requests.
+    Accepts a JSON array of company objects (stringified).
+    If 1 entry, uses single endpoint. If multiple, uses bulk endpoint.
     """
     request = Request(flask_request)
     data = request.data
-    # data = flask_request.get_json(force=True)
+
     # Get API key
-    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
+    api_key = extract_api_key(data.get("api_connection"))
     if not api_key:
         return Response(
             data={"error": "API key not provided"},
@@ -26,38 +32,60 @@ def execute():
         "Content-Type": "application/json"
     }
 
+    raw_companies = data.get("companies")
+
+    if not raw_companies:
+        return Response(
+            data={"error": "Missing 'companies' field in request"},
+            metadata={"status": "failed", "code": 400}
+        )
+
+    # Parse JSON string input
     try:
-        company = data.get("company")  # for single company search
-        companies = data.get("companies")  # for bulk company search (list of strings)
+        companies_parsed = raw_companies
+        print(f"Raw companies input: {raw_companies}")
+    except Exception as e:
+        return Response(
+            data={"error": f"Invalid JSON format in 'companies': {str(e)}"},
+            metadata={"status": "failed", "code": 400}
+        )
 
-        if company:
-            # Single company search
-            url = "https://app.icypeas.com/api/url-search/company"
-            payload = {
-                "companyOrDomain": company
-            }
-            response = requests.post(url, json=payload, headers=headers)
+    if not isinstance(companies_parsed, list):
+        return Response(
+            data={"error": "Expected a JSON array of company objects."},
+            metadata={"status": "failed", "code": 400}
+        )
 
-        elif companies:
-            # Bulk company search
-            url = "https://app.icypeas.com/api/url-search"
-            payload = {
-                "type": "company",
-                "data": [{"companyOrDomain": name} for name in companies[:50]]
-            }
-            response = requests.post(url, json=payload, headers=headers)
-
-        else:
+    if len(companies_parsed) == 1:
+        # Use single endpoint
+        company_data = companies_parsed[0]
+        company_name = company_data.get("company", "") or company_data.get("companyOrDomain", "")
+        if not company_name:
             return Response(
-                data={"error": "Missing 'company' or 'companies' in request data"},
+                data={"error": "Missing 'company' or 'companyOrDomain' in object."},
                 metadata={"status": "failed", "code": 400}
             )
+        url = "https://app.icypeas.com/api/url-search/company"
+        payload = {
+            "companyOrDomain": company_name
+        }
+    else:
+        # Use bulk endpoint
+        url = "https://app.icypeas.com/api/url-search"
+        payload = {
+            "type": "company",
+            "data": [
+                {"companyOrDomain": obj.get("company", "") or obj.get("companyOrDomain", "")}
+                for obj in companies_parsed[:50]
+                if obj.get("company") or obj.get("companyOrDomain")
+            ]
+        }
 
+    try:
+        response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
-        result = response.json()
-
         return Response(
-            data=result,
+            data=response.json(),
             metadata={"status": "success"}
         )
 
@@ -71,6 +99,7 @@ def execute():
             data={"error": f"Unexpected error: {str(e)}"},
             metadata={"status": "failed", "code": 500}
         )
+
 
 # @router.route("/content", methods=["GET", "POST"])
 # def content():

@@ -4,67 +4,64 @@ from main import router
 import requests
 import os
 
+def extract_api_key(api_connection: dict) -> str:
+    if not api_connection:
+        return None
+    return api_connection.get("connection_data", {}).get("value", {}).get("api_key_bearer")
+
 @router.route("/execute", methods=["POST", "GET"])
 def execute():
     """
-    Scrape LinkedIn profile(s) to get user information.
-    Supports both single profile (GET) and bulk profiles (POST).
+    Scrape LinkedIn profile(s) using Icypeas API.
+    If one profile URL is given, uses the single scrape endpoint.
+    If multiple, uses the bulk scrape endpoint.
     """
     request = Request(flask_request)
     data = request.data
-    # data = flask_request.get_json(force=True)
 
-    # Get API key from connection or environment
-    api_key = data.get("api_connection", {}).get("connection_data", {}).get("value") or os.getenv("ICYPEAS_API_KEY")
-    
+    # Extract API key
+    api_key = extract_api_key(data.get("api_connection"))
     if not api_key:
         return Response(
             data={"error": "API key not provided"},
             metadata={"status": "failed", "code": 401}
         )
-    
+
     headers = {
         "Authorization": api_key,
         "Content-Type": "application/json"
     }
-    
+
     try:
-        # Check if it's a single profile request or bulk
-        ## input with profile:"https://www.linkedin.com/in/some-profile"
-        profile_url = data.get("profile")
-        ## input with profile_urls:["https://www.linkedin.com/in/some-profile1", "https://www.linkedin.com/in/some-profile2"]
-        profile_urls = data.get("profile_urls", [])
-        
-        if profile_url:
-            # Single profile scrape (GET method)
-            url = f"https://app.icypeas.com/api/scrape/profile?url={profile_url}"
+        # Handle profile input
+        profiles_raw = data.get("profiles", "").strip()
+        profile_list = [p.strip() for p in profiles_raw.replace("\n", ",").split(",") if p.strip()]
+
+        if not profile_list:
+            return Response(
+                data={"error": "No valid LinkedIn profile URL(s) provided."},
+                metadata={"status": "failed", "code": 400}
+            )
+
+        if len(profile_list) == 1:
+            # Single profile mode
+            url = f"https://app.icypeas.com/api/scrape/profile?url={profile_list[0]}"
             response = requests.get(url, headers=headers)
-        elif profile_urls:
-            # Bulk profiles scrape (POST method)
+        else:
+            # Bulk profile mode
             url = "https://app.icypeas.com/api/scrape"
             payload = {
                 "type": "profile",
-                "data": profile_urls[:50]  # Max 50 profiles per request
+                "data": profile_list[:50]
             }
             response = requests.post(url, json=payload, headers=headers)
-            print(f"Scraping {len(profile_urls)} profiles")
-            print("response:", response)
-            print(profile_urls)
-        else:
-            return Response(
-                data={"error": "No profile URL(s) provided"},
-                metadata={"status": "failed", "code": 400}
-            )
-        
+
         response.raise_for_status()
-        result = response.json()
-        
-        # Return the job ID or results
         return Response(
-            data=result,
+            data=response.json(),
             metadata={"status": "success"}
         )
-        
+
     except requests.exceptions.RequestException as e:
         return Response(
             data={"error": f"Request failed: {str(e)}"},

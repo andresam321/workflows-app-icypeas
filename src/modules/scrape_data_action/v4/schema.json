@@ -4,37 +4,26 @@
   },
   "fields": [
     {
-      "id": "company",
-      "type": "string",
-      "label": "Single Company (Optional)",
-      "validation": { "required": false },
-      "ui_options": {
-        "ui_widget": "input",
-        "placeholder": "e.g., nec technologies"
-      }
-    },
-    {
       "id": "companies",
-      "type": "array",
-      "label": "Bulk Companies (Max 50)",
-      "validation": { "required": false },
-      "items": {
-        "type": "string"
-      },
+      "type": "string",
+      "label": "Company JSON Array (Max 50)",
+      "validation": { "required": true },
+      "description": "Paste a valid JSON array of company objects. Replace only the values inside. Do not change the keys like company, industry, location, or size.",
+      "default": "[{ \"company\": \"Tesla\", \"industry\": \"Automotive\", \"location\": \"USA\", \"size\": \"1000-5000\" }, { \"company\": \"Netflix\", \"industry\": \"Entertainment\", \"location\": \"USA\", \"size\": \"1000-5000\" }]",
       "ui_options": {
-        "ui_widget": "code_editor",
-        "placeholder": "[\"nec technologies\", \"netflix\"]"
+        "ui_widget": "textarea"
       }
     },
     {
       "type": "connection",
       "id": "api_connection",
       "label": "Icypeas API Key",
-      "description": "Select your connected Icypeas API key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
       "allowed_connection_management_types": ["managed", "custom"]
     }
   ],
   "ui_options": {
-    "ui_order": ["company", "companies", "api_connection"]
+    "ui_order": ["companies", "api_connection"]
   }
 }

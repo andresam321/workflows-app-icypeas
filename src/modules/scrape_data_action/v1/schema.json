@@ -4,34 +4,26 @@
   },
   "fields": [
     {
-      "id": "profile_url",
+      "id": "profiles",
       "type": "string",
-      "label": "Profile URL (Single)",
-      "validation": { "required": false },
+      "label": "LinkedIn Profile URL(s)",
+      "validation": { "required": true },
+      "description": "Paste one or more LinkedIn profile URLs. If multiple, separate them with commas.\nExample:\nhttps://www.linkedin.com/in/user1, https://www.linkedin.com/in/user2",
+      "default": "https://www.linkedin.com/in/user1, https://www.linkedin.com/in/user2",
       "ui_options": {
-        "ui_widget": "input",
-        "placeholder": "https://www.linkedin.com/in/username"
-      }
-    },
-    {
-      "id": "profile_urls",
-      "type": "array",
-      "label": "Profile URLs (Bulk)",
-      "validation": { "required": false },
-      "ui_options": {
-        "ui_widget": "json_editor",
-        "placeholder": "[\"https://www.linkedin.com/in/user1\", \"https://www.linkedin.com/in/user2\"]"
+        "ui_widget": "textarea"
       }
     },
     {
       "type": "connection",
       "id": "api_connection",
       "label": "Icypeas API Key",
-      "description": "Select your connected Icypeas API key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
       "allowed_connection_management_types": ["managed", "custom"]
     }
   ],
   "ui_options": {
-    "ui_order": ["profile_url", "profile_urls", "api_connection"]
+    "ui_order": ["profiles", "api_connection"]
   }
 }
