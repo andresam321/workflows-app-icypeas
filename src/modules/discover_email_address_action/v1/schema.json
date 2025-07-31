@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "first_name",
+      "type": "string",
+      "label": "First Name",
+      "validation": { "required": false }
+    },
+    {
+      "id": "last_name",
+      "type": "string",
+      "label": "Last Name",
+      "validation": { "required": false }
+    },
+    {
+      "id": "domain_or_company",
+      "type": "string",
+      "label": "Domain or Company",
+      "validation": { "required": true },
+      "description": "example.com or Company Name"
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["first_name", "last_name", "domain_or_company", "api_connection"]
+  }
+}

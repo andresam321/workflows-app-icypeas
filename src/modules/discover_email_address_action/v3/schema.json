@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "email",
+      "type": "string",
+      "label": "Email Address",
+      "validation": { 
+        "required": true
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["email", "api_connection"]
+  }
+}

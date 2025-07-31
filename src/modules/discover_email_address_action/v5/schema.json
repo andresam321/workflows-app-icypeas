@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+{
+  "id": "bulk_search",
+  "type": "boolean",
+  "label": "Is this a Bulk Job ID?",
+  "description": "Check if the pasted ID refers to a bulk job. Leave unchecked for regular single-job ID.",
+  "validation": {
+    "required": false
+  }
+},
+{
+  "id": "job_id",
+  "type": "string",
+  "label": "Search ID(s)",
+  "description": "To fetch a single search result, paste one ID. To fetch multiple results, paste multiple IDs separated by commas, spaces, or newlines and make sure to check 'Enable Bulk Search'.",
+  "default": "65d5b8221",
+  "ui_options": {
+    "ui_widget": "textarea"
+  },
+  "validation": {
+    "required": true
+  }
+},
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"],
+      "validation": {
+        "required": true
+      }
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["bulk_search", "job_id", "api_connection"]
+  }
+}

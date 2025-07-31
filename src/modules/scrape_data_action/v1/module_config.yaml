@@ -1,0 +1,3 @@
+module_settings:
+  module_name: "Scrape LinkedIn Profiles"
+  module_description: "Scrape LinkedIn profile(s) to extract user information including name, title, company, and other professional details. Supports both single and bulk profile scraping (max 50 per request)."

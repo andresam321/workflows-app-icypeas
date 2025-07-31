@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "profiles",
+      "type": "string",
+      "label": "LinkedIn Profile URL(s)",
+      "validation": { "required": true },
+      "description": "Paste one or more LinkedIn profile URLs. If multiple, separate them with commas.\nExample:\nhttps://www.linkedin.com/in/user1, https://www.linkedin.com/in/user2",
+      "default": "https://www.linkedin.com/in/user1, https://www.linkedin.com/in/user2",
+      "ui_options": {
+        "ui_widget": "textarea"
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["profiles", "api_connection"]
+  }
+}

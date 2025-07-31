@@ -1,0 +1,3 @@
+module_settings:
+  module_name: "Find People in Lead Database"
+  module_description: "Search for professionals in the Icypeas Lead Database using criteria like job title, company, location, industry, seniority, and department. Returns matching profiles with contact information."

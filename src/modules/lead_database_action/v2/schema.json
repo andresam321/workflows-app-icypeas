@@ -1,0 +1,194 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "name",
+      "type": "string",
+      "label": "Company Name",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "e.g., Acme Corp, Tech Innovations"
+      }
+    },
+    {
+      "id": "company_website",
+      "type": "string",
+      "label": "Company Website",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "e.g., example.com"
+      }
+    },
+    {
+      "id": "industry",
+      "type": "string",
+      "label": "Industry",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "dropdown",
+        "options": [
+          {"label": "Technology", "value": "technology"},
+          {"label": "Healthcare", "value": "healthcare"},
+          {"label": "Finance", "value": "finance"},
+          {"label": "Retail", "value": "retail"},
+          {"label": "Manufacturing", "value": "manufacturing"},
+          {"label": "Education", "value": "education"},
+          {"label": "Real Estate", "value": "real_estate"},
+          {"label": "Marketing", "value": "marketing"},
+          {"label": "Consulting", "value": "consulting"},
+          {"label": "Other", "value": "other"}
+        ]
+      }
+    },
+    {
+      "id": "location",
+      "type": "string",
+      "label": "Location",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "e.g., California, United States"
+      }
+    },
+    {
+      "id": "headcount",
+      "type": "string",
+      "label": "Company Size",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "dropdown",
+        "options": [
+          {"label": "1-10", "value": "1-10"},
+          {"label": "11-50", "value": "11-50"},
+          {"label": "51-200", "value": "51-200"},
+          {"label": "201-500", "value": "201-500"},
+          {"label": "501-1000", "value": "501-1000"},
+          {"label": "1001-5000", "value": "1001-5000"},
+          {"label": "5001-10000", "value": "5001-10000"},
+          {"label": "10001+", "value": "10001+"}
+        ]
+      }
+    },
+    {
+      "id": "revenue_range",
+      "type": "string",
+      "label": "Revenue Range",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "dropdown",
+        "options": [
+          {"label": "< $1M", "value": "0-1M"},
+          {"label": "$1M - $10M", "value": "1M-10M"},
+          {"label": "$10M - $50M", "value": "10M-50M"},
+          {"label": "$50M - $100M", "value": "50M-100M"},
+          {"label": "$100M - $500M", "value": "100M-500M"},
+          {"label": "$500M - $1B", "value": "500M-1B"},
+          {"label": "> $1B", "value": "1B+"}
+        ]
+      }
+    },
+    {
+      "id": "founding_year_min",
+      "type": "number",
+      "label": "Founded After (Year)",
+      "validation": {
+        "required": false,
+        "min": 1900,
+        "max": 2025
+      },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "e.g., 2010"
+      }
+    },
+    {
+      "id": "founding_year_max",
+      "type": "number",
+      "label": "Founded Before (Year)",
+      "validation": {
+        "required": false,
+        "min": 1900,
+        "max": 2025
+      },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "e.g., 2020"
+      }
+    },
+    {
+      "id": "technologies",
+      "type": "array",
+      "label": "Technologies Used",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "json_editor",
+        "placeholder": "[\"Salesforce\", \"AWS\", \"React\", \"Python\"]"
+      }
+    },
+    {
+      "id": "keywords",
+      "type": "array",
+      "label": "Keywords",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "json_editor",
+        "placeholder": "[\"SaaS\", \"B2B\", \"AI\", \"startup\"]"
+      }
+    },
+    {
+      "id": "limit",
+      "type": "number",
+      "label": "Results Limit",
+      "validation": {
+        "required": false,
+        "min": 1,
+        "max": 1000
+      },
+      "ui_options": {
+        "ui_widget": "input",
+        "default": 100
+      }
+    },
+    {
+      "id": "offset",
+      "type": "number",
+      "label": "Results Offset",
+      "validation": {
+        "required": false,
+        "min": 0
+      },
+      "ui_options": {
+        "ui_widget": "input",
+        "default": 0
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key",
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": [
+      "name",
+      "company_website",
+      "industry",
+      "location",
+      "headcount",
+      "revenue_range",
+      "founding_year_min",
+      "founding_year_max",
+      "technologies",
+      "keywords",
+      "limit",
+      "offset",
+      "api_connection"
+    ]
+  }
+}

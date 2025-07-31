@@ -1,0 +1,4 @@
+module_settings:
+  module_name: "Find Companies in Lead Database"
+  module_description: "Search for companies in the Icypeas Lead Database using criteria like industry, size, location, revenue, founding year, and technologies. Returns matching company profiles with detailed information."
+

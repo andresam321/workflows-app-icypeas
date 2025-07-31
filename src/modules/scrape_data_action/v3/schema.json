@@ -1,0 +1,30 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+
+{
+  "id": "profiles",
+  "type": "string",
+  "label": "Profile(s) JSON (Max 50)",
+  "validation": { "required": true },
+  "description": "Paste valid JSON array. Replace only values inside the objects. Do not change keys like firstname, lastname, or companyOrDomain.",
+  "default": "[{ \"firstname\": \"Marc\", \"lastname\": \"Lachabody\", \"companyOrDomain\": \"nec technologies\" }, { \"firstname\": \"Jane\", \"lastname\": \"Doe\", \"companyOrDomain\": \"microsoft\" }]",
+  "ui_options": {
+    "ui_widget": "textarea"
+  }
+},
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["profiles", "api_connection"]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "company_mode",
+      "type": "string",
+      "label": "Company Input Type",
+      "validation": { "required": true },
+      "ui_options": {
+        "ui_widget": "SelectWidget",
+        "refresh_on_change": true
+      },
+      "choices": {
+        "values": [
+          { "label": "Single Company", "value": "company" },
+          { "label": "Multiple Companies", "value": "company_urls" }
+        ]
+      }
+    },
+    {
+      "id": "companies",
+      "type": "string",
+      "label": "LinkedIn Company URL(s)",
+      "validation": { "required": true },
+      "description": "Paste one or more LinkedIn company URLs. If multiple, use commas to separate them.",
+      "default": "https://www.linkedin.com/company/company1, https://www.linkedin.com/company/company2",
+      "ui_options": {
+        "ui_widget": "textarea"
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["company_mode", "companies", "api_connection"]
+  }
+}

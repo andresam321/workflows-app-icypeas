@@ -1,0 +1,191 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "firstname",
+      "type": "object",
+      "label": "First Name Filter",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., John, Jane"
+      }
+    },
+    {
+      "id": "lastname",
+      "type": "object",
+      "label": "Last Name Filter",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., Doe, Smith"
+      }
+    },
+    {
+      "id": "currentJobTitle",
+      "type": "object",
+      "label": "Current Job Title",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., Software Engineer"
+      }
+    },
+    {
+      "id": "pastJobTitle",
+      "type": "object",
+      "label": "Past Job Title",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., Developer, Analyst"
+      }
+    },
+    {
+      "id": "currentCompanyName",
+      "type": "object",
+      "label": "Current Company Name",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., Google, Amazon"
+      }
+    },
+    {
+      "id": "pastCompanyName",
+      "type": "object",
+      "label": "Past Company Name",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., IBM, Oracle"
+      }
+    },
+    {
+      "id": "currentCompanyUrn",
+      "type": "object",
+      "label": "Current Company URN",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_only",
+        "placeholder": "e.g., 1234"
+      }
+    },
+    {
+      "id": "pastCompanyUrn",
+      "type": "object",
+      "label": "Past Company URN",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_only",
+        "placeholder": "e.g., 3456"
+      }
+    },
+    {
+      "id": "school",
+      "type": "object",
+      "label": "School Name",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., Stanford, Harvard"
+      }
+    },
+    {
+      "id": "languages",
+      "type": "object",
+      "label": "Languages",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., EN, ES"
+      }
+    },
+    {
+      "id": "skills",
+      "type": "object",
+      "label": "Skills",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., Python, JavaScript"
+      }
+    },
+    {
+      "id": "location",
+      "type": "object",
+      "label": "Location",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., US, San Francisco"
+      }
+    },
+    {
+      "id": "keyword",
+      "type": "object",
+      "label": "Keyword Search",
+      "validation": { "required": false },
+      "ui_options": {
+        "ui_widget": "include_exclude",
+        "placeholder": "e.g., CEO, Co-Founder"
+      }
+    },
+    {
+      "id": "limit",
+      "type": "number",
+      "label": "Results Limit",
+      "validation": {
+        "required": false,
+        "min": 1,
+        "max": 1000
+      },
+      "ui_options": {
+        "ui_widget": "input",
+        "default": 100
+      }
+    },
+    {
+      "id": "offset",
+      "type": "number",
+      "label": "Results Offset",
+      "validation": {
+        "required": false,
+        "min": 0
+      },
+      "ui_options": {
+        "ui_widget": "input",
+        "default": 0
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key",
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": [
+      "firstname",
+      "lastname",
+      "currentJobTitle",
+      "pastJobTitle",
+      "currentCompanyName",
+      "pastCompanyName",
+      "currentCompanyUrn",
+      "pastCompanyUrn",
+      "school",
+      "languages",
+      "skills",
+      "location",
+      "keyword",
+      "limit",
+      "offset",
+      "api_connection"
+    ]
+  }
+}

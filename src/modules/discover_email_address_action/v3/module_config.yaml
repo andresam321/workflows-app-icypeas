@@ -1,0 +1,4 @@
+module_settings:
+  module_name: "Verify a Single Email Address"
+  module_description: "Uses Icypeas to verify if a specific email address exists and is valid."
+

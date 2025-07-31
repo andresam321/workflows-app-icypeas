@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "domain",
+      "type": "string",
+      "label": "Domain",
+      "validation": { "required": true }, 
+      "description": "The domain to discover email addresses for. For example, 'example.com'." 
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["domain", "api_connection"]
+  }
+}

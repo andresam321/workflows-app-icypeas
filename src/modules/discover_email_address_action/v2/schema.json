@@ -1,0 +1,85 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "Icypeas API Key",
+      "description": "Select your connected Icypeas API key.",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    },
+    {
+      "id": "task",
+      "type": "string",
+      "label": "Task Type",
+      "validation": { "required": true },
+      "ui_options": {
+        "ui_widget": "SelectWidget",
+        "refresh_on_change": true
+      },
+      "choices": {
+        "values": [
+          { "label": "Email Search", "value": "email-search" },
+          { "label": "Email Verification", "value": "email-verification" },
+          { "label": "Domain Search", "value": "domain-search" }
+        ]
+      }
+    },
+    {
+      "id": "name",
+      "type": "string",
+      "label": "Task Name",
+      "default": "My Task",
+      "description": "Ex: My cool email discovery, My cool email verification, My cool domain search",
+      "validation": {
+        "required": true
+      }
+    },
+    {
+  "id": "example_data",
+  "type": "string",
+  "label": "Example Format",
+  "description":"Refresh example data based on the selected task.",
+  "ui_options": {
+    "ui_widget": "SelectWidget",
+    "refresh_on_click": true
+  },
+  "content": {
+    "type": ["managed"],
+    "content_objects": [
+      {
+        "id": "data_example_dynamic",
+        "content_object_depends_on_fields": [
+          { "id": "task" }
+        ]
+      }
+    ]
+  }
+},
+{
+  "id": "data",
+  "type": "string",
+  "label": "Your Bulk Data",
+  "description": "Copy the format from above. Each line must match the example format for the selected task.",
+  "ui_options": {
+    "ui_widget": "textarea"
+  },
+  "validation": {
+    "required": true
+  }
+}
+
+  ],
+  "ui_options": {
+    "ui_order": [
+      "task",
+      "name",
+      "example_data",
+      "data",
+      "api_connection"
+    ]
+  }
+}
